@@ -10,6 +10,8 @@ Nothing to see here...
 ### Issues
 
 - What happens if QmAlice responds with value for Key1(v1) before QmBruce can respond with Key1(v2)?
+- should everyone be allowed to write?
+- overwriting a key might be considered an attack vector
 
 ## Proposal 1 (unworkable)
 
