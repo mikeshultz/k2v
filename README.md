@@ -1,6 +1,6 @@
 # libp2p test project
 
-Nothing to see here...
+Nothing to see here...  This is an incomplete experimental prototype.  There's nothing to use here.
 
 ## Proposal 0 (stupid)
 
