@@ -9,6 +9,11 @@ const KadDHT = require('libp2p-kad-dht')
 const mplex = require('libp2p-mplex')
 //const secio = require('libp2p-secio')
 
+const { createLogger } = require('./log')
+
+const log = createLogger('libp2p')
+
+
 function mapMuxers (list) {
   return list.map((pref) => {
     if (typeof pref !== 'string') {
@@ -36,7 +41,6 @@ function getMuxers (muxers) {
 
 class Node extends Libp2p {
   constructor(_options) {
-    console.log('_options.bootstrapList', _options.bootstrapList)
     const options = {
       peerInfo: _options.peerInfo,
       modules: {
@@ -81,17 +85,16 @@ class Node extends Libp2p {
      */
     this.on('peer:discovery', (peer) => {
       if (!this.knownPeers[peer.id._idB58String]) {
-        console.log('###### internal new peer', peer.id._idB58String)
+        log.debug('New peer found:', peer.id._idB58String)
         this.knownPeers[peer.id._idB58String] = peer
       }
     })
   }
 
   ping(remotePeerInfo, callback) {
-    console.log('sending ping...')
+    log.debug('libp2p.ping...')
     const p = new Ping(this._switch, remotePeerInfo)
     p.on('ping', time => {
-      console.log('ping!')
       p.stop() // stop sending pings
       callback(null, time)
     })

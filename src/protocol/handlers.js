@@ -5,7 +5,7 @@ const request = require('./request')
 
 const log = createLogger('handlers')
 
-function handlePing(data) {
+function handlePing(data, cb) {
   if (data.length === 0) {
     throw new Error('Ping should have data')
   }
@@ -14,20 +14,24 @@ function handlePing(data) {
   const now = +new Date()
   const diff = now - sent
   log.debug(`${now} - ${sent} = ${diff}`)
-  log.info(`ping received in ~${diff/1000}s`)
+  const msg = `ping received in ~${diff}ms`
+  log.info(msg)
+  if (cb) cb(null, msg)
   return request(COMMAND_TO_BYTE['pong'], data)
 }
 
-function handlePong(data) {
+function handlePong(data, cb) {
   log.debug('handlePong()')
   log.debug('handlePong data', data)
   const sent = +new Date(parseInt(data.toString('hex'), 16))
   const now = +new Date()
   const diff = now - sent
+  const msg = `ping round trip time ${diff}ms`
   let logFunc = log.debug
   if (diff > 5000) logFunc = log.warn
   else if (diff > 1000) logFunc = log.info
-  logFunc(`ping round trip time ${diff}ms`)
+  logFunc(msg)
+  if (cb) cb(null, msg)
 }
 
 const COMMAND_HADLERS = {
@@ -42,9 +46,9 @@ function splitData(data) {
   }
 }
 
-function handler(dat) {
+function handler(dat, cb) {
   const { cmd, data } = splitData(dat)
-  return COMMAND_HADLERS[cmd](data)
+  return COMMAND_HADLERS[cmd](data, cb)
 }
 
 module.exports = handler

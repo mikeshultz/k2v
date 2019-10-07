@@ -22,7 +22,7 @@ async function main() {
 
   // HTTP server
   log.info('Starting HTTP server...')
-  expressApp = await createServer({ port: 7700 }, node)
+  await createServer({ port: 7700 }, node)
   log.info('HTTP server started.')
 }
 

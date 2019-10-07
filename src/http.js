@@ -1,8 +1,11 @@
 const express = require('express')
 
-const request = require('./protocol/request')
 const { COMMAND_TO_BYTE } = require('./const')
 const { getNodeIPs, getPort } = require('./utils/net')
+const { createLogger } = require('./log')
+
+const log = createLogger('http')
+
 
 async function createServer(options, k2vnode) {
   const app = express()
@@ -12,16 +15,15 @@ async function createServer(options, k2vnode) {
   app.get('/', (req, res) => res.send('Hello World!'))
   app.get('/ping/:dest', async (req, res) => {
     const dest = req.params.dest
-    console.log('!!!!! sending command byte ', COMMAND_TO_BYTE['ping'])
     try {
-      await k2vnode.sendTo(dest, COMMAND_TO_BYTE['ping'])
-      res.send('ping')
+      const resp = await k2vnode.sendTo(dest, [COMMAND_TO_BYTE['ping']])
+      res.send(resp)
     } catch (err) {
       res.send(err.message)
     }
   })
 
-  app.listen(port, () => console.log(`HTTP server listening on port ${port}!`))
+  app.listen(port, () => log.info(`HTTP server listening on port ${port}!`))
 
   return app
 }

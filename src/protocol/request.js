@@ -2,7 +2,7 @@ const { createLogger } = require('../log')
 
 const { COMMAND_TO_BYTE } = require('../const')
 
-const log = createLogger('requrest')
+const log = createLogger('request')
 
 /**
  * Left-pad a hex string to the byte so Buffer doesn't truncate
@@ -49,14 +49,13 @@ const COMMAND_BUILDERS = {
  * @param {string} arg2
  * @param {string} arg3...
  */
-function makeRequest() {
+function request() {
   const cmd = arguments[0]
   if (!Object.prototype.hasOwnProperty.call(COMMAND_BUILDERS, cmd)) {
     throw new Error(`No repsonse builders for command (${cmd})`)
   }
   const reqBuf = new Buffer.from(COMMAND_BUILDERS[cmd].apply(null, Array.prototype.slice.call(arguments, 1)), 'hex')
-  console.log('reqBuf', reqBuf)
   return reqBuf
 }
 
-module.exports = makeRequest
+module.exports = request

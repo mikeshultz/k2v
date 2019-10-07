@@ -9,11 +9,10 @@ const request = require('./request')
 const log = createLogger('protocol')
 const p = Pushable()
 
-function handleIncoming(data) {
+function handleIncoming(data, cb) {
   if (data.length > MAX_DATA_LEN) throw new Error('Data length to long!')
-    console.log('idata len:', data.length)
     if (data.length > 0) {
-      const response = handler(data)
+      const response = handler(data, cb)
       if (response) {
         log.debug('Sending response...')
         p.push(response)
@@ -42,9 +41,9 @@ function receive(conn) {
  * @param {string} command byte in hex
  * @param {string} data (multiple? TODO)
  */
-function send(conn) {
+function send(conn, args, cb) {
   pull(p, conn)
-  const data = request.apply(null, Array.prototype.slice.call(arguments, 1))
+  const data = request.apply(null, args)
   log.debug('sending data...', data)
   p.push(data)
   log.debug('Sent.')
@@ -53,7 +52,7 @@ function send(conn) {
   pull(
     conn,
     pull.drain((data) => {
-      handleIncoming(data)
+      handleIncoming(data, cb)
     })
   )
 }

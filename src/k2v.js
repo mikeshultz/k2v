@@ -8,6 +8,7 @@ const { createLogger } = require('./log')
 
 const log = createLogger('k2v')
 const tick = (ms = 1000) => { return new Promise(resolve => { setTimeout(() => resolve(true), ms) }) }
+const sendAsync = Bluebird.promisify(send)
 
 
 class K2VNode {
@@ -18,13 +19,15 @@ class K2VNode {
 
   init(libp2pOptions) { //, connManagerOptions) {
     createNode(libp2pOptions).then(node => {
-      console.log('Starting service...')
+      log.info('Starting k2v service...')
 
       this.node = node
       this.addLibp2pHandlers(this.node)
       //this.connManager = this.initConnManager(connManagerOptions)
-      console.log(`Listening on:`)
-      console.log(`   ${this.node.peerInfo.multiaddrs.toArray().join(`/${this.node.peerInfo.id._idB58String}\n   `)}`)
+      log.info(`Listening on:`)
+      this.node.peerInfo.multiaddrs.toArray().map(maddr => {
+        log.info(`   ${maddr}/${this.node.peerInfo.id._idB58String}`)
+      })
       
       // Callback hell
       this.node.dialProtocolAsync = Bluebird.promisify(this.node.dialProtocol)
@@ -32,45 +35,44 @@ class K2VNode {
   }
 
   start() {
-    this.node.start(err => console.error(err))
+    this.node.start(err => { if (err) log.error(err) })
   }
 
   async startWhenReady() {
-    console.debug('Waiting for node to become ready...')
+    log.debug('Waiting for node to become ready...')
     do {
       if (this.node === null) continue
       this.start()
       break
     } while (await tick())
-    console.log('Node started.')
+    log.debug('Node started.')
   }
 
   addLibp2pHandlers(node) {
     node.on('start', () => {
-      console.log('started!')
+      log.info('k2v started!')
 
       node.handle(PROTOCOL_ID, (proto, conn) => {
-        console.log('*******************protocol handler')
         receive(conn)
       })
     })
 
     node.once('peer:discovery', (peer) => {
-      console.log('new peer!', peer.id._idB58String)
+      log.debug('new peer!', peer.id._idB58String)
 
       node.dialProtocol(peer, PROTOCOL_ID, (err, conn) => {
         if (err) {
-          console.error('error making connection!')
-          console.error(err)
+          log.error('error making connection!')
+          log.error(err)
         } else {
           log.debug('Sending ping...')
-          send(conn, COMMAND_TO_BYTE['ping'])
+          send(conn, [COMMAND_TO_BYTE['ping']])
         }
       })
     })
 
     node.on('peer:connect', (peer) => {
-      console.log('new peer connected!', peer.id._idB58String)
+      log.debug('new peer connected!', peer.id._idB58String)
       /*node.ping(peer, (err, time) => {
         if (err) console.error('error pinging', err)
         console.log(`pong!  ${time}`)
@@ -78,24 +80,24 @@ class K2VNode {
     })
 
     node.on('peer:disconnect', (peer) => {
-      console.log('peer connection ended!', peer.id._idB58String)
+      log.debug('peer connection ended!', peer.id._idB58String)
     })
 
     node.on('connection:start', (peer) => {
-      console.log('new connection!', peer.id._idB58String)
+      log.debug('new connection!', peer.id._idB58String)
     })
 
     node.on('connection:end', (peer) => {
-      console.log('connection ended!', peer.id._idB58String)
+      log.debug('connection ended!', peer.id._idB58String)
     })
 
     node.on('error', (err) => {
-      console.error('Error in libp2p')
+      log.error('Error in libp2p')
       throw err
     })
 
     node.on('stop', () => {
-      console.log('lip2p2 stopped')
+      log.debug('lip2p2 stopped')
     })
   }
 
@@ -106,12 +108,12 @@ class K2VNode {
    * @param {string} arg2
    * @param {string} arg3...
    */
-  async sendTo(dest) {
+  async sendTo(dest, args) {
     if (dest.startsWith('Qm')) {
       dest = `/p2p-circuit/p2p/${dest}`
     }
     const conn = await this.node.dialProtocolAsync(dest, PROTOCOL_ID)
-    send(conn, ...Array.prototype.slice.call(arguments, 1))
+    return await sendAsync(conn, args.slice(args, 1))
   }
 
   /*initConnManager(options) {
