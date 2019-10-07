@@ -1,0 +1,29 @@
+{
+  "name": "k2v",
+  "version": "0.1.0",
+  "description": "p2p key value store",
+  "main": "index.js",
+  "license": "MIT",
+  "dependencies": {
+    "bluebird": "^3.7.0",
+    "express": "^4.17.1",
+    "ip": "^1.1.5",
+    "libp2p": "^0.26.2",
+    "libp2p-bootstrap": "^0.9.7",
+    "libp2p-kad-dht": "^0.16.0",
+    "libp2p-mdns": "^0.12.3",
+    "libp2p-mplex": "^0.8.5",
+    "libp2p-secio": "^0.11.1",
+    "libp2p-spdy": "^0.13.3",
+    "libp2p-tcp": "^0.13.2",
+    "libp2p-websockets": "^0.12.4",
+    "lodash": "^4.17.15",
+    "logplease": "^1.2.15",
+    "node-fetch": "^2.6.0",
+    "peer-info": "^0.16.2",
+    "tcp-port-used": "^1.0.1"
+  },
+  "devDependencies": {
+    "eslint": "^6.5.1"
+  }
+}
