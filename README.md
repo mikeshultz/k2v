@@ -2,13 +2,14 @@
 
 Nothing to see here...
 
-## Questions
+## Proposal 0 (stupid)
 
-- Versioning, lack of "master"
+- every node accepts sets for all keys
+- node responds if it has a value for a key and if not, broadcasts and returns the first response
+
+### Issues
+
 - What happens if QmAlice responds with value for Key1(v1) before QmBruce can respond with Key1(v2)?
-- Should nodes share all the keys they have with all their peers?  Is that reasonable?  Does this scale?
-- Should all nodes keep a copy of all values between eachother, or should one node only keep what was directly set on them?
-- Broadcast key updates?
 
 ## Proposal 1 (unworkable)
 
